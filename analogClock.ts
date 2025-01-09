@@ -1,3 +1,5 @@
+// This is a generator of analog clock art using ascii and basic math in TypeScript. It has absolutely no real purpose, use it to have fun or smth.
+
 function GenerateAnalogClock(time: string): void {
     function parseTime(time: string): [number, number, number] {
         const [hours, minutes, seconds] = time.split(":").map(Number);
