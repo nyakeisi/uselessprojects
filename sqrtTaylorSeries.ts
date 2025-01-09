@@ -29,3 +29,5 @@ function TaylorSqrt(S: number, __i: number = 15, __precision: number = 0): void 
 
 const input = 10; // The number from which you need to take the square root.
 TaylorSqrt(input, 15)
+
+// Renarde Rose
