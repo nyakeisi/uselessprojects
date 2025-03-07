@@ -1,3 +1,11 @@
+// I tried to recreate wishing system that miHoYo is using in their latest games and actually succeded on making it as close as possible. 
+// The results are practially the same as in game and there is even a guarantee system!
+// Main functions are getFiveStarChance() and getFourStarChance(), where they calculate current chance of getting a certain rarity item or character.
+// Four star: 1-7 pulls have a base chance of 5.1% of getting a four star. 8-9 pulls have higher chances of ~25% and ~50% respectfully, and 10th is guaranteed.
+// Five star: 1-73 pulls have a base chance of 0.6% of getting a five star. 74-89 pulls grow with each pull using a formula: BASE CHANCE + (PULL - 73) * GROWTH CHANCE.
+// We don't really know what growth chance is, but 6% with each pull is actually a very close result, making a pretty smooth growth from 0.6% to ~97% on 89th pull.
+// And of course 90th pull is gonna be a guaranteed five star.
+
 type PullResult = {
     result: 3 | 4 | 5, // rarity.
     id: string, // just a response.
