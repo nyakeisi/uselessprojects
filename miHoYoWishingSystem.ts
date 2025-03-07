@@ -1,6 +1,6 @@
 type PullResult = {
-    result: 3 | 4 | 5,
-    id: string,
+    result: 3 | 4 | 5, // rarity.
+    id: string, // just a response.
     resultType: 1 | 2 | 3 // 1 - lost 50/50, 2 - won 50/50, 3 - guaranteed.
 }
 
@@ -80,6 +80,10 @@ export class WishingSystem {
         }
     }
 }
+
+// Renarde Rose
+
+
 
 // Below is a test for how the wishing simulator works, don't include it in your project:
 (async() => {
