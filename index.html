@@ -1,0 +1,1219 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <title>Вариант 9 | Курсовая работа Дюльдина Д. В.</title>
+</head>
+<body>
+    <header>
+        <h1>Курсовая работа</h1>
+        <p>Вариант №9</p>
+    </header>
+    <main>
+        <svg id="drawing" width="1500" height="1000" viewBox="0 0 200 40"></svg>
+        <div class="inline">
+            <select id="selectType" onchange="updateNailOptions()">
+                <option value="nail">Гвоздь ГОСТ 4032-63</option>
+                <option value="screw">Винт ГОСТ 17473-80</option>
+                <option value="stud" selected>Шпилька ГОСТ 22032-76</option>
+            </select>
+            <select id="selectValues" onchange="fixMaxMin()">
+                <option value="0.8,10,1.4">d: 0.8мм, l: 10мм, D: 1.4мм</option>
+                <option value="1.0,16,1.8">d: 1.0мм, l: 16мм, D: 1.8мм</option>
+                <option value="1.2,20,2.2" selected>d: 1.2мм, l: 20мм, D: 2.2мм</option>
+                <option value="1.6,25,2.8">d: 1.6мм, l: 25мм, D: 2.8мм</option>
+                <option value="1.6,32,2.8">d: 1.6мм, l: 32мм, D: 2.8мм</option>
+                <option value="2.0,40,3.6">d: 2.0мм, l: 40мм, D: 3.6мм</option>
+            </select>
+            <label id="sizeable">Длина скрепления: <input type="number" id="sInput" value="15" placeholder="15" onchange="fixValues()">мм</label>
+            <label id="gapbetween">Между: <input type="number" id="gInput" value="8" placeholder="8" onchange="fixValues()">мм</label>
+        </div>
+        <div class="inline scale">
+            <label for="scaleSlider">Масштаб: </label>
+            <input type="range" style="width: 10rem;" id="scaleSlider" min="1.0" max="9.5" step="0.5" value="1.5" oninput="draw()">
+            <label><span id="scaleValue">1.5</span>x</label>
+        </div>
+        <div class="inline simple">
+            <input type="checkbox" style="width: 1.5rem; height: 1.5rem;" name="simpleCon" id="isSimple" oninput="draw()">
+            <label for="isSimple">Упрощённое соединение?</label>
+        </div>
+        
+        <!-- <button onclick="fixValues()">Построить</button> -->
+    </main>
+    <footer>
+        <p>Designed by <span>Renarde Rose</span></p>
+        <p id="sub">УрФУ Дмитрий В. Дюльдин НМТ-143001 2025</p>
+    </footer>
+
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
+        * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+        font-family: 'Poppins', sans-serif;
+        }
+
+        :root{
+        --primary: #e8dedf;
+        --secondary: #5e595a;
+        --dark: #171717;
+        --accent: #fb6574;
+        }
+
+        .scale label {
+            font-family: monospace;
+        }
+        
+        .scale label span {
+            font-family: monospace;
+        }
+
+        main {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        min-height: calc(100vh - 48px);
+        width: 100%;
+        }
+
+        header {
+        position: sticky;
+        top: 0;
+        height: 48px;
+        background-color: var(--primary);
+        padding: 0 3rem;
+        color: var(--dark);
+        display: flex;
+        flex-direction: row;
+        justify-content: space-between;
+        align-items: center;
+        }
+
+        header h1 {
+        text-transform: uppercase;
+        font-weight: 900;
+        }
+
+        header p {
+        font-family: monospace;
+        font-weight: 500;
+        }
+
+        footer {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        height: 10rem;
+        background-color: var(--dark);
+        width: 100%;
+        }
+
+        .inline {
+        display: flex;
+        flex-direction: row;
+        
+        align-items: center;
+        justify-content: center;
+        }
+        select {
+        font-family: monospace;
+        margin-right: 1rem;
+        padding: 1rem;
+        outline: none;
+        border: none;
+        
+        font-size: 1.5rem;
+        font-weight: 200;
+        color: var(--dark);
+        }
+        label {
+        font-family: monospace;
+        padding: 1rem;
+        font-size: 1.5rem;
+        font-weight: 200;
+        color: var(--dark);
+        }
+        input {
+        font-family: monospace;
+        width: 5ch;
+        font-size: 1.5rem;
+        font-weight: 200;
+        outline: none;
+        border: none;
+        color: var(--dark);
+        }
+        svg {
+        border: 3px solid var(--accent);
+        border-radius: 4rem;
+        }
+
+        p {
+        color: var(--secondary);
+        font-size: 2rem;
+        font-weight: 300;
+        }
+
+        p span {
+        color: var(--accent);
+        font-weight: 900;
+        }
+
+        p[id="sub"] {
+        font-size: 0.9rem;
+        opacity: 0.6;
+        }
+
+        button {
+        padding: 1rem 2rem;
+        margin-top: 1rem;
+        font-size: 2rem;
+        background-color: var(--accent);
+        border: none;
+        outline: none;
+        color: white;
+        font-weight: 800;
+        border-radius: 1rem;
+        }
+
+    </style>
+
+    <script>
+    const scaleS = document.getElementById('scaleSlider');
+    const scaleV = document.getElementById('scaleValue');
+
+    scaleS.addEventListener('input', () => {
+        scaleV.textContent = String(parseFloat(scaleSlider.value).toFixed(1));
+        draw();
+    });
+
+    function updateNailOptions() {
+        const typeS = document.getElementById('selectType').value;
+        const valueS = document.getElementById('selectValues');
+        const sizeS = document.getElementById('sizeable')
+        const gapS = document.getElementById('gapbetween')
+        const scaleSlider = document.getElementById('scaleSlider');
+        const scaleValue = document.getElementById('scaleValue');
+        valueS.innerHTML = '';
+        sizeS.innerHTML = '';
+
+        switch (typeS) {
+            case 'nail': {
+                sizeS.innerHTML = 'Длина скрепления: <input onchange="fixValues()" type="number" id="sInput" value="15" placeholder="15">мм'
+                scaleSlider.value = 5.0
+                scaleValue.textContent = '5.0'
+                gapS.style.display = 'block';
+                gapS.innerHTML = 'Между: <input type="number" id="gInput" value="8" placeholder="8" onchange="fixValues()">мм'
+                valueS.innerHTML += `
+                    <option value="0.8,10,1.4">d: 0.8мм, l: 10мм, D: 1.4мм</option>
+                    <option value="1.0,16,1.8">d: 1.0мм, l: 16мм, D: 1.8мм</option>
+                    <option value="1.2,20,2.2" selected>d: 1.2мм, l: 20мм, D: 2.2мм</option>
+                    <option value="1.6,25,2.8">d: 1.6мм, l: 25мм, D: 2.8мм</option>
+                    <option value="1.6,32,2.8">d: 1.6мм, l: 32мм, D: 2.8мм</option>
+                    <option value="2.0,40,3.6">d: 2.0мм, l: 40мм, D: 3.6мм</option>
+                `;
+                break;
+            }
+            case 'screw': {
+                sizeS.innerHTML = 'Длина резьбы: <input onchange="fixValues()" type="number" id="sInput" value="9" placeholder="9">мм'
+                scaleSlider.value = 2.0
+                scaleValue.textContent = '2.0'
+                gapS.style.display = 'none';
+                valueS.innerHTML += `
+                    <option value="7" >M6×7</option>
+                    <option value="8" >M6×8</option>
+                    <option value="9" >M6×9</option>
+                    <option value="10">M6×10</option>
+                    <option value="12">M6×12</option>
+                    <option value="14">M6×14</option>
+                    <option value="16">M6×16</option>
+                    <option value="18">M6×18</option>
+                    <option value="20" selected>M6×20</option>
+                    <option value="22">M6×22</option>
+                    <option value="25">M6×25</option>
+                    <option value="30">M6×28</option>
+                    <option value="30">M6×30</option>
+                    <option value="32">M6×32</option>
+                    <option value="35">M6×35</option>
+                    <option value="38">M6×38</option>
+                    <option value="40">M6×40</option>
+                    <option value="42">M6×42</option>
+                    <option value="45">M6×45</option>
+                    <option value="48">M6×48</option>
+                    <option value="50">M6×50</option>
+                    <option value="55">M6×55</option>
+                    <option value="60">M6×60</option>
+                    <option value="55">M6×65</option>
+                    <option value="60">M6×70</option>
+                    <option value="55">M6×75</option>
+                    <option value="60">M6×80</option>
+                    <option value="55">M6×95</option>
+                    <option value="60">M6×100</option>
+                    <option value="55">M6×105</option>
+                    <option value="60">M6×110</option>
+                    <option value="55">M6×115</option>
+                    <option value="60">M6×120</option>
+                `;
+                break;
+            }
+            case 'stud': {
+                sizeS.innerHTML = 'Длина резьбы: <input onchange="fixValues()" type="number" id="sInput" value="20" placeholder="20">мм'
+                scaleSlider.value = 1.5
+                scaleValue.textContent = '1.5'
+                gapS.style.display = 'none';
+                valueS.innerHTML += `
+                    <option value="40">М12×40</option>
+                    <option value="45">М12×45</option>
+                    <option value="50">М12×50</option>
+                    <option value="55">М12×55</option>
+                    <option value="60">М12×60</option>
+                    <option value="65" selected>М12×65</option>
+                    <option value="70">М12×70</option>
+                    <option value="75">М12×75</option>
+                    <option value="80">М12×80</option>
+                    <option value="90">М12×90</option>
+                    <option value="100">М12×100</option>
+                    <option value="110">М12×110</option>
+                    <option value="120">М12×120</option>
+                    <option value="130">М12×130</option>
+                    <option value="140">М12×140</option>
+                    <option value="150">М12×150</option>
+                    <option value="160">М12×160</option>
+                    <option value="170">М12×170</option>
+                    <option value="180">М12×180</option>
+                    <option value="190">М12×190</option>
+                    <option value="200">М12×200</option>
+
+                `;
+                break;
+            }
+        }
+        draw();
+        fixMaxMin();
+    }
+    
+    function fixMaxMin() {
+        fixValues()
+
+        const typeS = document.getElementById('selectType').value;
+        const valueS = document.getElementById('selectValues').value;
+        const sizeS = document.getElementById('sInput')
+        
+        switch (typeS) {
+            case 'nail': { 
+                sizeS.min = 1;
+                sizeS.max = 99;
+                break;
+            }
+            case 'screw': { 
+                sizeS.min = 1;
+                sizeS.max = parseInt(valueS) > 30-2 ? 30-2 : parseInt(valueS)-2;
+                break;
+            }
+            case 'stud': { 
+                sizeS.min = 2;
+                sizeS.max = parseInt(valueS) - 24;
+                break;
+            }
+        }
+
+        draw()
+    }
+
+    function fixValues() {
+        const typeS = document.getElementById('selectType').value;
+        const valueS = document.getElementById('selectValues').value;
+        const sizeS = document.getElementById('sInput')
+
+        switch (typeS) {
+            case 'nail': { 
+                break;
+            }
+            case 'screw': { 
+                if (sizeS.value > parseInt(valueS)) sizeS.value = parseInt(valueS);
+                else if (sizeS.value < 1) sizeS.value = 1;
+                else if (!sizeS.value) sizeS.value = 1
+                break;
+            }
+            case 'stud': { 
+                if (sizeS.value > parseInt(valueS) - 24) sizeS.value = parseInt(valueS) - 24;
+                else if (sizeS.value < 2) sizeS.value = 2;
+                else if (!sizeS.value) sizeS.value = 2
+                break;
+            }
+        }
+
+        draw();
+    }
+
+    function draw() {
+        const CURRENT_TYPE = document.getElementById('selectType').value;
+        const scaleSlider = parseFloat(document.getElementById('scaleSlider').value);
+        const isSimple = document.getElementById('isSimple').checked;
+        const svg = document.getElementById('drawing');
+
+        // ИЗМЕНИТЬ ЭТО ЗНАЧЕНИЕ В ЗАВИСИМОСТИ ОТ МОНИТОРА
+        const scaleModifier = 1.6;
+
+        svg.innerHTML = '';
+        switch (CURRENT_TYPE) {
+            case 'nail': {
+                const values = document.getElementById('selectValues').value.split(',').map(parseFloat)
+                const d = values[0];
+                const D = values[2];
+                const h = 0.6 * d;
+                const l = values[1];
+                const s = parseFloat(document.getElementById('sInput').value);
+
+                const scale = scaleSlider / scaleModifier; // 5
+                const svgWidth = svg.clientWidth;
+                const svgHeight = svg.clientHeight;
+                const startX = 20;
+                const centerY = svgHeight/10/5;
+
+                // здесь менять шаг между гвоздями
+                const gapBetweenNails = parseInt(document.getElementById('gInput').value);
+                const center1 = centerY + (gapBetweenNails * scale) / 2
+                const center2 = centerY - (gapBetweenNails * scale) / 2
+
+                const shaftStart = startX;
+                const hatWidth = (h * 100) * 0.01 * scale;
+                const hatHeight = (D * 100) * 0.01 * scale;
+                const hatOffsetX = shaftStart - hatWidth / 2;
+                const hatOffsetY1 = center1 - hatHeight / 2;
+                const hatOffsetY2 = center2 - hatHeight / 2;
+                const hatRatio = hatHeight/220;
+                const pointLength = (l - h) / 5 * scale;
+                const shaftLength = (l - h) * scale - pointLength - hatHeight;
+                const shaftEnd = shaftStart + shaftLength;
+
+                // Стержень
+                svg.innerHTML += `
+                    <rect x="${shaftStart}" y="${center1 - (d * scale) / 2}" 
+                        width="${shaftLength}" height="${d * scale}" fill="white" stroke="black" stroke-width="0.4" />
+                `;
+                svg.innerHTML += `
+                    <rect x="${shaftStart}" y="${center2 - (d * scale) / 2}" 
+                        width="${shaftLength}" height="${d * scale}" fill="white" stroke="black" stroke-width="0.4" />
+                `;
+
+                // Укрепление
+                svg.innerHTML += `
+                    <polygon points="
+                    ${shaftStart},${center1 - (d * scale) / 2} 
+                    ${shaftStart + (d/2 * scale) / 2},${center1 - ((d * scale) / 2)} 
+                    ${shaftStart},${center1 - ((d/2 * scale))*1.5}" 
+                    fill="black" />
+                    <polygon points="
+                    ${shaftStart},${center1 + (d * scale) / 2} 
+                    ${shaftStart + (d/2 * scale) / 2},${center1 + ((d * scale) / 2)} 
+                    ${shaftStart},${center1 + ((d/2 * scale))*1.5}" 
+                    fill="black" />
+                `;
+                svg.innerHTML += `
+                    <polygon points="
+                    ${shaftStart},${center2 - (d * scale) / 2} 
+                    ${shaftStart + (d/2 * scale) / 2},${center2 - ((d * scale) / 2)} 
+                    ${shaftStart},${center2 - ((d/2 * scale))*1.5}" 
+                    fill="black" />
+                    <polygon points="
+                    ${shaftStart},${center2 + (d * scale) / 2} 
+                    ${shaftStart + (d/2 * scale) / 2},${center2 + ((d * scale) / 2)} 
+                    ${shaftStart},${center2 + ((d/2 * scale))*1.5}" 
+                    fill="black" />
+                `;
+
+                // Шляпка
+                svg.innerHTML += `
+                <g transform="translate(${hatOffsetX - ((h * scale)/2 - hatRatio)}, ${hatOffsetY1}) scale(${hatRatio})">
+                    <path d="M72 220.317C30.3881 206.37 0 162.401 0 110.316C2.96751e-05 58.2316 30.3881 14.2625 72 0.31543V220.317Z"
+                    fill="white" stroke="black" stroke-width="${0.4 / (hatRatio)}" />
+                </g>
+                `;
+                svg.innerHTML += `
+                <g transform="translate(${hatOffsetX - ((h * scale)/2 - hatRatio)}, ${hatOffsetY2}) scale(${hatRatio})">
+                    <path d="M72 220.317C30.3881 206.37 0 162.401 0 110.316C2.96751e-05 58.2316 30.3881 14.2625 72 0.31543V220.317Z"
+                    fill="white" stroke="black" stroke-width="${0.4 / (hatRatio)}" />
+                </g>
+                `;
+
+                // Заточка
+                svg.innerHTML += `
+                    <polygon points="
+                        ${shaftEnd},${center1 - (d * scale) / 2} 
+                        ${shaftEnd},${center1 + (d * scale) / 2} 
+                        ${shaftEnd + pointLength},${center1}
+                        " 
+                        fill="white" stroke="black" stroke-width="0.4" />
+                `+`
+                    <line x1="${shaftEnd}" y1="${center1}" x2="${shaftEnd+pointLength}" y2="${center1}"
+                        fill="white stroke="black" stroke-width="0.4" />
+                `;
+                svg.innerHTML += `
+                    <polygon points="
+                        ${shaftEnd},${center2 - (d * scale) / 2} 
+                        ${shaftEnd},${center2 + (d * scale) / 2} 
+                        ${shaftEnd + pointLength},${center2}
+                        " 
+                        fill="white" stroke="black" stroke-width="0.4" />
+                `+`
+                    <line x1="${shaftEnd}" y1="${center2}" x2="${shaftEnd+pointLength}" y2="${center2}"
+                        fill="white stroke="black" stroke-width="0.4" />
+                `;
+
+                // Элементы черчения
+                svg.innerHTML += `
+                <line x1="0" y1="${center1}" x2="100%" y2="${center1}" stroke="black" stroke-width="0.1" stroke-dasharray="13,1,1,1" />
+                `;
+                svg.innerHTML += `
+                <line x1="0" y1="${center2}" x2="100%" y2="${center2}" stroke="black" stroke-width="0.1" stroke-dasharray="13,1,1,1" />
+                <text x="2%" y="${centerY + 34}" style="font-size: 0.2rem; font-family: monospace;">Масштаб: x${scaleSlider.toFixed(1)}</text>
+
+                <line x1="${4}" y1="${centerY + 36}" x2="${4 + 10 * scale}" y2="${centerY + 36}" stroke="black" stroke-width="1.5" />
+                <text x="${5 + 10 * scale}" y="${centerY + 36.25}" dominant-baseline="middle" style="font-size: 0.15rem; font-family: monospace;">1см</text>
+                `;
+
+                // Риски скрепляемых деталей
+                const sMarkStart = shaftStart;
+                const sMarkEnd = shaftStart + (s * scale);
+                svg.innerHTML += `
+                    <line x1="${sMarkStart}" y1="${centerY - 30}" x2="${sMarkStart}" y2="${centerY + 0}" stroke="black" stroke-width="0.1" />
+                    <line x1="${sMarkEnd}" y1="${centerY - 30}" x2="${sMarkEnd}" y2="${centerY + 0}" stroke="black" stroke-width="0.1" />
+                    <line x1="${sMarkStart}" y1="${centerY-30+2}" x2="${sMarkEnd}" y2="${centerY-30+2}" stroke="black" stroke-width="0.1" marker-start="url(#arrow-reverse)" marker-end="url(#arrow)" />
+                    <text x="${(sMarkStart + sMarkEnd) / 2}" y="${centerY - 30}" text-anchor="middle" dominant-baseline="middle" style="font-size: 0.2rem; font-family: monospace;">${s}мм</text>
+
+                    <line x1="${startX - 10}" y1="${center1}" x2="${startX -10}" y2="${center2}" stroke="black" stroke-width="0.1" marker-start="url(#arrow-down)" marker-end="url(#arrow-up)" />
+                    <text x="${startX - 10}" y="${centerY}" text-anchor="right" dominant-baseline="right" style="font-size: 0.2rem; font-family: monospace;">${gapBetweenNails}мм</text>
+
+                    <marker id="arrow-reverse" markerWidth="5" markerHeight="5" refX="0" refY="2.5" orient="auto" markerUnits="strokeWidth">
+                        <path d="M5,0 L0,2.5 L5,5 Z" fill="black" />
+                    </marker>
+                    <marker id="arrow" markerWidth="5" markerHeight="5" refX="5" refY="2.5" orient="auto" markerUnits="strokeWidth">
+                        <path d="M0,0 L5,2.5 L0,5 Z" fill="black" />
+                    </marker>
+                    <marker id="arrow-up" markerWidth="5" markerHeight="5" refX="5" refY="2.5" orient="auto" markerUnits="strokeWidth">
+                        <path d="M0,0 L5,2.5 L0,5 Z" fill="black" />
+                    </marker>
+                    <marker id="arrow-down" markerWidth="5" markerHeight="5" refX="0" refY="2.5" orient="auto" markerUnits="strokeWidth">
+                        <path d="M5,5 L0,2.5 L5,0 Z" fill="black" />
+                    </marker>
+                    </defs>
+                `;
+
+                // Скрепление
+                const materialWidth = (gapBetweenNails + 4) * scale;
+
+                svg.innerHTML = `
+                    <pattern id="diagonalLines" width="${2 * scale}" height="${2 * scale}" patternTransform="rotate(45)" patternUnits="userSpaceOnUse">
+                    <line x1="0" y1="0" x2="0" y2="20" stroke="#b5b5b5" stroke-width="0.6" />
+                    </pattern>
+                    <pattern id="diagonalLinesRotate" width="${2 * scale}" height="${2 * scale}" patternTransform="rotate(-45)" patternUnits="userSpaceOnUse">
+                    <line x1="0" y1="0" x2="0" y2="20" stroke="#b5b5b5" stroke-width="0.6" />
+                    </pattern>
+                    
+                    <rect x="${sMarkStart}" y="${centerY - materialWidth/2}" width="${(sMarkEnd - (sMarkStart)) / 2}" height="${materialWidth}" stroke="#b5b5b5" stroke-width="0.4" fill="url(#diagonalLines)" />
+                    <rect x="${sMarkStart + (sMarkEnd - (sMarkStart)) / 2}" y="${centerY - materialWidth/2}" width="${(sMarkEnd - (sMarkStart)) / 2}" height="${materialWidth}" stroke="#b5b5b5" stroke-width="0.4" fill="url(#diagonalLinesRotate)" />
+                ` + svg.innerHTML;
+                break;
+            }
+            case 'screw': {
+                const values = document.getElementById('selectValues').value.split(',').map(parseFloat);
+                const d = 6;
+                const l = values[0];
+                const b = parseFloat(document.getElementById('sInput').value);
+                const p = 1;
+                const D = 10;
+                const K = 4.2;
+
+                const scale = scaleSlider / scaleModifier; // 2
+                const svgWidth = svg.clientWidth;
+                const svgHeight = svg.clientHeight;
+                const startX = 8 * scale;
+                const centerY = svgHeight/10/5;
+
+                const hatWidth = 4.2 * scale;
+                const hatHeight = 10 * scale;
+                const hatOffsetX = startX - hatWidth;
+                const hatOffsetY = centerY - hatHeight / 2;
+                const hatRatio = hatHeight/100;
+                const hatGap = 15;
+
+                const ringWidth = 1.4 * scale;
+                const ringHeight = 8.9 * scale;
+                const ringOffsetX = startX;
+                const ringOffsetY = centerY - ringHeight/2;
+                const ringRatio = ringHeight/89;
+
+                // Шляпа вид спереди
+                const sliceDiameter = 2.3
+
+                if (isSimple) {
+                    svg.innerHTML += `
+                        <circle cx="${startX + (K + l + hatGap) * scale}" cy="${centerY}" r="${D/2 * scale}" fill="white" stroke="black" stroke-width="0.4" />
+                        <line 
+                            x1="${startX + (K + l + hatGap) * scale + (D * scale / Math.sqrt(2)) / 2}" 
+                            y1="${centerY - (D * scale / Math.sqrt(2)) / 2}" 
+                            x2="${startX + (K + l + hatGap) * scale - (D * scale / Math.sqrt(2)) / 2}" 
+                            y2="${centerY + (D * scale / Math.sqrt(2)) / 2}" 
+                            stroke="black" 
+                            stroke-width="1" />
+                    `;
+                } else {
+                    svg.innerHTML += `
+                        <circle cx="${startX + (K + l + hatGap) * scale}" cy="${centerY}" r="${D/2 * scale}" fill="white" stroke="black" stroke-width="0.4" />
+                        <circle cx="${startX + (K + l + hatGap) * scale}" cy="${centerY}" r="${D/sliceDiameter * scale}" fill="none" stroke="black" stroke-width="0.4" />
+                        <line 
+                            x1="${startX + (K + l + hatGap) * scale + ((D/(sliceDiameter/2)) * scale / Math.sqrt(2)) / 2 - (Math.sqrt(2) * scale)/2}" 
+                            y1="${centerY - ((D/(sliceDiameter/2)) * scale / Math.sqrt(2)) / 2 - (Math.sqrt(2) * scale)/2}" 
+                            x2="${startX + (K + l + hatGap) * scale - ((D/(sliceDiameter/2)) * scale / Math.sqrt(2)) / 2 - (Math.sqrt(2) * scale)/2}" 
+                            y2="${centerY + ((D/(sliceDiameter/2)) * scale / Math.sqrt(2)) / 2 - (Math.sqrt(2) * scale)/2}" 
+                            stroke="black" 
+                            stroke-width="0.4" />
+                        <line 
+                            x1="${startX + (K + l + hatGap) * scale + ((D/(sliceDiameter/2)) * scale / Math.sqrt(2)) / 2 + (Math.sqrt(2) * scale)/2}" 
+                            y1="${centerY - ((D/(sliceDiameter/2)) * scale / Math.sqrt(2)) / 2 + (Math.sqrt(2) * scale)/2}" 
+                            x2="${startX + (K + l + hatGap) * scale - ((D/(sliceDiameter/2)) * scale / Math.sqrt(2)) / 2 + (Math.sqrt(2) * scale)/2}" 
+                            y2="${centerY + ((D/(sliceDiameter/2)) * scale / Math.sqrt(2)) / 2 + (Math.sqrt(2) * scale)/2}" 
+                            stroke="black" 
+                            stroke-width="0.4" />
+                    `;
+                }
+
+
+                // Стержень
+                svg.innerHTML += `
+                    <rect x="${startX}" y="${centerY - (d * scale) / 2}" 
+                        width="${(l * scale) - (p * scale) - (p/2.6* scale)}" height="${d * scale}" fill="white" stroke="black" stroke-width="0.4" />
+                `;
+
+                // Укрепление
+                svg.innerHTML += `
+                    <polygon points="
+                    ${startX},${centerY - (d * scale) / 2} 
+                    ${startX + (d/4 * scale) / 2},${centerY - ((d * scale) / 2)} 
+                    ${startX},${centerY - ((d/4 * scale))*2.5}" 
+                    fill="black" />
+                    <polygon points="
+                    ${startX},${centerY + (d * scale) / 2} 
+                    ${startX + (d/4 * scale) / 2},${centerY + ((d * scale) / 2)} 
+                    ${startX},${centerY + ((d/4 * scale))*2.5}" 
+                    fill="black" />
+
+                    <polygon points="
+                    ${startX},${centerY - ((d-0.4) * scale) / 2} 
+                    ${startX + (d/4 * scale) / 2},${centerY - (((d-0.4) * scale) / 2)} 
+                    ${startX},${centerY - (((d-0.4)/4 * scale))*2.5}" 
+                    fill="white" />
+                    <polygon points="
+                    ${startX},${centerY + ((d-0.4) * scale) / 2} 
+                    ${startX + (d/4 * scale) / 2},${centerY + (((d-0.4) * scale) / 2)} 
+                    ${startX},${centerY + (((d-0.4)/4 * scale))*2.5}" 
+                    fill="white" />
+                `;
+                
+                // Резьба
+                if (isSimple) {
+                    svg.innerHTML += `
+                        <polygon points="
+                            ${startX + (l - b) * scale},${centerY + (d * scale) / 2}
+                            ${startX + (l) * scale},${centerY + (d * scale) / 2} 
+                            ${startX + (l) * scale},${centerY - (d * scale) / 2} 
+                            ${startX + (l - b) * scale},${centerY - (d * scale) / 2}
+                            " 
+                            fill="white" stroke="black" stroke-width="0.4" />
+                    `;
+                } else {
+                    svg.innerHTML += `
+                        <polygon points="
+                            ${startX + (l - b) * scale},${centerY + (d * scale) / 2}
+                            ${startX + (l - p) * scale},${centerY + (d * scale) / 2} 
+                            ${startX + l * scale},${centerY + (d * scale) / 2.6}
+                            ${startX + l * scale},${centerY - (d * scale) / 2.6}
+                            ${startX + (l - p) * scale},${centerY - (d * scale) / 2} 
+                            ${startX + (l - b) * scale},${centerY - (d * scale) / 2}
+                            " 
+                            fill="white" stroke="black" stroke-width="0.4" />
+                    `;
+                }
+
+                // Задняя часть
+                if (isSimple) {
+                } else {
+                    svg.innerHTML += `
+                        <polygon points="
+                            ${startX + l * scale},${centerY - (d * scale) / 2.6}
+                            ${startX + l * scale},${centerY + (d * scale) / 2.6}
+                            ${startX + (l + p) * scale},${centerY + (d * scale) / 2.6}
+                            ${startX + (l + p) * scale},${centerY - (d * scale) / 2.6}
+                            " 
+                            fill="white" stroke="black" stroke-width="0.4" />
+                        <polygon points="
+                            ${startX + (l + p) * scale},${centerY - (d * scale) / 2.6}
+                            ${startX + (l + p) * scale},${centerY + (d * scale) / 2.6}
+                            ${startX + (l + p*4) * scale},${centerY + (d * scale) / 2.6}
+                            ${startX + (l + p*4) * scale - (p/2.6/2* scale)},${centerY - (d * scale) / 2.6}
+                            " 
+                            fill="white" stroke="black" stroke-width="0.4" />
+                        <polygon points="
+                            ${startX + (l + p*4) * scale},${centerY - (d * scale) / 2.6}
+                            ${startX + (l + p*4) * scale},${centerY + (d * scale) / 2.6}
+                            ${startX + (l + p*5) * scale},${centerY}
+                            " 
+                            fill="white" stroke="black" stroke-width="0.4" />
+                    `;
+                }
+
+                // Шляпка
+                const R = 5.4236;
+                if (isSimple) {
+                    svg.innerHTML += `
+                        <g transform="translate(${hatOffsetX}, ${hatOffsetY}) scale(${hatRatio})">
+                            <path d="
+                            M${K * 10} 0
+                            A${R * 10} ${R * 10} 0 0 0 ${K * 10} ${D * 10}
+                            Z
+                            "
+                            fill="white" stroke="black" stroke-width="${0.4 / (hatRatio)}" />
+                        </g>
+                    `;
+                    svg.innerHTML += `
+                        <line 
+                            x1="${hatOffsetX + 0.8 * scale}" y1="${centerY}" 
+                            x2="${hatOffsetX + 3 * scale}" y2="${centerY}" 
+                            stroke="black" stroke-width="1" />
+                    `;
+                } else {
+                    // svg.innerHTML += `
+                    //     <g transform="translate(${hatOffsetX}, ${hatOffsetY}) scale(${hatRatio})">
+                    //         <path d="M${K*10} ${D*10}C20.2335 94.5764 4.26165 79.1644 0.0791016 60H20V40H0.0791016C4.26165 20.8356 20.2335 5.4236 ${K*10} 0V${D*10}Z"
+                    //         fill="white" stroke="black" stroke-width="${0.4 / (hatRatio)}" />
+                    //     </g>
+                    // `;
+                    svg.innerHTML += `
+                        <g transform="translate(${hatOffsetX}, ${hatOffsetY}) scale(${hatRatio})">
+                            <path d="
+                            M${K * 10} 0
+                            A${R * 10} ${R * 10} 0 0 0 ${K * 10} ${D * 10}
+                            Z
+                            "
+                            fill="white" stroke="black" stroke-width="${0.4 / (hatRatio)}" />
+                        </g>
+                    `;
+                    svg.innerHTML += `
+                        <rect x="${startX - 4 * scale}" y="${centerY - 1 * scale}" 
+                            width="${2.5 * scale}" height="${2 * scale}" fill="white" stroke="black" stroke-width="0.4" />
+                        <rect x="${startX - 5.32 * scale}" y="${centerY - 1.5 * scale}" 
+                            width="${2 * scale}" height="${3 * scale}" fill="white" />
+                    `
+                }
+
+                // Внутри
+                if (isSimple) {
+                    svg.innerHTML += `
+                        <line 
+                            x1="${startX + (l - b) * scale}" y1="${centerY - ((d-p) * scale) / 2}" 
+                            x2="${startX + (l) * scale}" y2="${centerY - ((d-p) * scale) / 2}" 
+                            stroke="black" stroke-width="0.1" />
+                        <line 
+                            x1="${startX + (l - b) * scale}" y1="${centerY + ((d-p) * scale) / 2}" 
+                            x2="${startX + (l) * scale}" y2="${centerY + ((d-p) * scale) / 2}" 
+                            stroke="black" stroke-width="0.1" />
+                    `
+                } else {
+                    svg.innerHTML += `
+                        <line 
+                            x1="${startX + (l - b) * scale}" y1="${centerY - ((d-p) * scale) / 2}" 
+                            x2="${startX + (l - p/2) * scale}" y2="${centerY - ((d-p) * scale) / 2}" 
+                            stroke="black" stroke-width="0.1" />
+                        <line 
+                            x1="${startX + (l - b) * scale}" y1="${centerY + ((d-p) * scale) / 2}" 
+                            x2="${startX + (l - p/2) * scale}" y2="${centerY + ((d-p) * scale) / 2}" 
+                            stroke="black" stroke-width="0.1" />
+                        <line 
+                            x1="${startX + (l - p) * scale}" y1="${centerY + (d * scale) / 2}" 
+                            x2="${startX + (l - p) * scale}" y2="${centerY - (d * scale) / 2}" 
+                            stroke="black" stroke-width="0.4" />
+                    `
+                }
+
+                // Шайба
+                if (isSimple) {
+                    svg.innerHTML += `
+                        <rect x="${ringOffsetX}" y="${centerY - (ringHeight) / 2}" 
+                            width="${ringWidth}" height="${ringHeight}" 
+                            fill="white" stroke="black" stroke-width="0.4" />
+                    `;
+                } else {
+                    svg.innerHTML += `
+                        <g transform="translate(${ringOffsetX}, ${ringOffsetY}) scale(${ringRatio})">
+                            <path d="M14 90H0V56.3564L14 46.6572V90ZM14 34.1865L0 43.8857V0H14V34.1865Z"
+                            fill="white" stroke="black" stroke-width="${0.4 / (ringRatio)}" />
+                        </g>
+                    `;
+                }
+
+                // Риски длин
+                const sMarkStart = startX;
+                const sMarkEnd = startX + (l * scale);
+
+                const bMarkStart = startX + (l - b) * scale;
+                const bMarkEnd = startX + (l * scale);
+                svg.innerHTML += `
+                    <line x1="${sMarkStart}" y1="${centerY - 30}" x2="${sMarkStart}" y2="${centerY + 0}" stroke="black" stroke-width="0.1" />
+                    <line x1="${sMarkEnd}" y1="${centerY - 30}" x2="${sMarkEnd}" y2="${centerY + 0}" stroke="black" stroke-width="0.1" />
+                    <line x1="${sMarkStart}" y1="${centerY-30+2}" x2="${sMarkEnd}" y2="${centerY-30+2}" stroke="black" stroke-width="0.1" marker-start="url(#arrow-reverse)" marker-end="url(#arrow)" />
+                    <text x="${(sMarkStart + sMarkEnd) / 2}" y="${centerY - 30}" text-anchor="middle" dominant-baseline="middle" style="font-size: 0.2rem; font-family: monospace;">${l}мм</text>
+
+                    <line x1="${bMarkStart}" y1="${centerY - 24}" x2="${bMarkStart}" y2="${centerY + 0}" stroke="black" stroke-width="0.1" />
+                    <line x1="${bMarkEnd}" y1="${centerY - 24}" x2="${bMarkEnd}" y2="${centerY + 0}" stroke="black" stroke-width="0.1" />
+                    <line x1="${bMarkStart}" y1="${centerY-24+2}" x2="${bMarkEnd}" y2="${centerY-24+2}" stroke="black" stroke-width="0.1" marker-start="url(#arrow-reverse)" marker-end="url(#arrow)" />
+                    <text x="${(bMarkStart + bMarkEnd) / 2}" y="${centerY - 24}" text-anchor="middle" dominant-baseline="middle" style="font-size: 0.2rem; font-family: monospace;">${b}мм</text>
+
+                    <defs>
+                        <marker id="arrow-reverse" markerWidth="5" markerHeight="5" refX="0" refY="2.5" orient="auto" markerUnits="strokeWidth">
+                            <path d="M5,0 L0,2.5 L5,5 Z" fill="black" />
+                        </marker>
+                        <marker id="arrow" markerWidth="5" markerHeight="5" refX="5" refY="2.5" orient="auto" markerUnits="strokeWidth">
+                            <path d="M0,0 L5,2.5 L0,5 Z" fill="black" />
+                        </marker>
+                    </defs>
+                `;
+                //<text x="${(bMarkStart + bMarkEnd) / 2}" y="${centerY + 20}" text-anchor="middle" dominant-baseline="middle" style="font-size: 0.2rem;">Шаг резьбы ${p}мм</text>
+
+                // Элементы черчения
+                svg.innerHTML += `
+                <line x1="0" y1="${centerY}" x2="100%" y2="${centerY}" stroke="black" stroke-width="0.1" stroke-dasharray="13,1,1,1" />
+                <line x1="${startX + (K + l + hatGap) * scale}" y1="${centerY-30}" x2="${startX + (K + l + hatGap) * scale}" y2="${centerY+30}" stroke="black" stroke-width="0.1" stroke-dasharray="13,1,1,1" />
+
+                <text x="2%" y="${centerY + 30}" style="font-size: 0.2rem; font-family: monospace;">Шайба ГОСТ 6402-70 6.1мм 1.4мм</text>
+                <text x="2%" y="${centerY + 34}" style="font-size: 0.2rem; font-family: monospace;">Масштаб: x${scaleSlider.toFixed(1)}</text>
+
+                <line x1="${4}" y1="${centerY + 36}" x2="${4 + 10 * scale}" y2="${centerY + 36}" stroke="black" stroke-width="1.5" />
+                <text x="${5 + 10 * scale}" y="${centerY + 36.25}" dominant-baseline="middle" style="font-size: 0.15rem; font-family: monospace;">1см</text>
+                `;
+
+                const materialWidth = hatHeight + 1*scale;
+                const firstWidth = (l - b) * scale
+
+                svg.innerHTML = `
+                    <pattern id="diagonalLines" width="${1.5 * scale}" height="${1.5 * scale}" patternTransform="rotate(45)" patternUnits="userSpaceOnUse">
+                    <line x1="0" y1="0" x2="0" y2="10" stroke="#b5b5b5" stroke-width="0.6" />
+                    </pattern>
+                    <pattern id="diagonalLinesRotate" width="${1.5 * scale}" height="${1.5 * scale}" patternTransform="rotate(-45)" patternUnits="userSpaceOnUse">
+                    <line x1="0" y1="0" x2="0" y2="10" stroke="#b5b5b5" stroke-width="0.6" />
+                    </pattern>
+
+                    <polygon points="
+                        ${startX + ringWidth},${centerY + materialWidth}
+                        ${startX + ringWidth},${centerY + (d + p) * scale / 2}
+                        ${startX + ringWidth + firstWidth},${centerY + (d + p) * scale / 2}
+                        ${startX + ringWidth + firstWidth},${centerY + materialWidth}
+                        " 
+                        stroke="#b5b5b5" stroke-width="0.4" fill="url(#diagonalLinesRotate)" />
+
+                    <polygon points="
+                        ${startX + ringWidth},${centerY - materialWidth}
+                        ${startX + ringWidth},${centerY - (d + p) * scale / 2}
+                        ${startX + ringWidth + firstWidth},${centerY - (d + p) * scale / 2}
+                        ${startX + ringWidth + firstWidth},${centerY - materialWidth}
+                        " 
+                        stroke="#b5b5b5" stroke-width="0.4" fill="url(#diagonalLinesRotate)" />
+                    
+                    <polygon points="
+                        ${startX + ringWidth + firstWidth},${centerY + materialWidth}
+                        ${startX + ringWidth + firstWidth},${centerY - materialWidth}
+                        ${startX + (0.4 * scale) + (l * scale) + (p*4) * scale + (3 * scale)},${centerY - materialWidth}
+                        ${startX + (0.4 * scale) + (l * scale) + (p*4) * scale + (3 * scale)},${centerY + materialWidth}
+                        " 
+                        stroke="#b5b5b5" stroke-width="0.4" fill="url(#diagonalLines)" />
+                ` + svg.innerHTML;
+                break;
+            }
+            case 'stud': {
+                const values = document.getElementById('selectValues').value.split(',').map(parseFloat);
+                const d = 12;
+                const l = values[0];
+                const b = parseFloat(document.getElementById('sInput').value);
+                const bG = l > 125 ? 30 : 24;
+                const p = 1.75;
+
+                const scale = scaleSlider / scaleModifier; // 1.5
+                const svgWidth = svg.clientWidth;
+                const svgHeight = svg.clientHeight;
+                const startX = 5 * scale;
+                const centerY = svgHeight/10/5;
+
+                const ringWidth = 2.9 * scale;
+                const ringHeight = 18 * scale;
+                const ringOffsetX = (bG * scale) - ringWidth + startX;
+                const ringOffsetY = centerY - ringHeight/2;
+                const ringRatio = ringHeight/89;
+                
+                const nutHeight = 10.8 * scale;
+                const nutWrench = 18 * scale
+                const nutWidth = 21 * scale;
+
+                const l1 = l - b - bG;
+
+                // Гайка вид сверху
+                const sliceDiameter = 2.3
+
+                if (isSimple) {
+                    svg.innerHTML += `
+                        <polygon points="
+                            ${startX + (l + 30) * scale},${centerY - nutWidth / 2}
+                            ${startX + (l + 30) * scale + (Math.sqrt(3) * nutWidth / 4)},${centerY - nutWidth / 4}
+                            ${startX + (l + 30) * scale + (Math.sqrt(3) * nutWidth / 4)},${centerY + nutWidth / 4}
+                            ${startX + (l + 30) * scale},${centerY + nutWidth / 2}
+                            ${startX + (l + 30) * scale - (Math.sqrt(3) * nutWidth / 4)},${centerY + nutWidth / 4}
+                            ${startX + (l + 30) * scale - (Math.sqrt(3) * nutWidth / 4)},${centerY - nutWidth / 4}"
+                            fill="none" stroke="black" stroke-width="0.4"
+                            />
+                        <circle cx="${startX + (l + 30) * scale}" cy="${centerY}" r="${(d-p)/2 * scale}" fill="none" stroke="black" stroke-width="0.4" />
+                    `;
+                } else {
+                    svg.innerHTML += `
+                        <circle cx="${startX + (l + 30) * scale}" cy="${centerY}" r="${d/2 * scale}" fill="none" stroke="black" stroke-width="0.1" />
+                        <rect x="${startX + (l + 30) * scale + 1}" y="${centerY - (d/2 * scale) -2}" 
+                            width="${(d/2 * scale)+1}" height="${(d/2 * scale)+1}" 
+                            fill="white" stroke-width="0.4" />
+                        <polygon points="
+                            ${startX + (l + 30) * scale},${centerY - nutWidth / 2}
+                            ${startX + (l + 30) * scale + (Math.sqrt(3) * nutWidth / 4)},${centerY - nutWidth / 4}
+                            ${startX + (l + 30) * scale + (Math.sqrt(3) * nutWidth / 4)},${centerY + nutWidth / 4}
+                            ${startX + (l + 30) * scale},${centerY + nutWidth / 2}
+                            ${startX + (l + 30) * scale - (Math.sqrt(3) * nutWidth / 4)},${centerY + nutWidth / 4}
+                            ${startX + (l + 30) * scale - (Math.sqrt(3) * nutWidth / 4)},${centerY - nutWidth / 4}"
+                            fill="none" stroke="black" stroke-width="0.4"
+                            />
+                        <circle cx="${startX + (l + 30) * scale}" cy="${centerY}" r="${nutWrench/2}" fill="none" stroke="black" stroke-width="0.4" />
+                        <circle cx="${startX + (l + 30) * scale}" cy="${centerY}" r="${(d-p)/2 * scale}" fill="none" stroke="black" stroke-width="0.4" />
+                    `;
+                }
+
+                // Резьба под гайку
+                if (isSimple) {
+                    svg.innerHTML += `
+                        <polygon points="
+                            ${startX},${centerY + (d * scale) / 2}
+                            ${startX + bG * scale},${centerY + (d * scale) / 2}
+                            ${startX + bG * scale},${centerY - (d * scale) / 2}
+                            ${startX},${centerY - (d * scale) / 2}
+                        "
+                        fill="white" stroke="black" stroke-width="0.4" />
+
+                        <line 
+                            x1="${startX + (bG) * scale}" y1="${centerY - ((d-p) * scale) / 2}" 
+                            x2="${startX}" y2="${centerY - ((d-p) * scale) / 2}" 
+                            stroke="black" stroke-width="0.1" />
+                        <line 
+                            x1="${startX + (bG) * scale}" y1="${centerY + ((d-p) * scale) / 2}" 
+                            x2="${startX}" y2="${centerY + ((d-p) * scale) / 2}" 
+                            stroke="black" stroke-width="0.1" />
+                    `;
+                } else {
+                    svg.innerHTML += `
+                        <polygon points="
+                            ${startX},${centerY + (d * scale) / 2.6}
+                            ${startX + p * scale},${centerY + (d * scale) / 2}
+                            ${startX + p * scale},${centerY + (d * scale) / 2}
+                            ${startX + bG * scale},${centerY + (d * scale) / 2}
+                            ${startX + bG * scale},${centerY - (d * scale) / 2}
+                            ${startX + p * scale},${centerY - (d * scale) / 2}
+                            ${startX},${centerY - (d * scale) / 2.6}
+                        "
+                        fill="white" stroke="black" stroke-width="0.4" />
+
+                        <line 
+                            x1="${startX + (bG) * scale}" y1="${centerY - ((d-p) * scale) / 2}" 
+                            x2="${startX + (p/2) * scale}" y2="${centerY - ((d-p) * scale) / 2}" 
+                            stroke="black" stroke-width="0.1" />
+                        <line 
+                            x1="${startX + (bG) * scale}" y1="${centerY + ((d-p) * scale) / 2}" 
+                            x2="${startX + (p/2) * scale}" y2="${centerY + ((d-p) * scale) / 2}" 
+                            stroke="black" stroke-width="0.1" />
+                        <line 
+                            x1="${startX + (p) * scale}" y1="${centerY + (d * scale) / 2}" 
+                            x2="${startX + (p) * scale}" y2="${centerY - (d * scale) / 2}" 
+                            stroke="black" stroke-width="0.4" />
+                    `;
+                }
+
+                // Гладкая часть
+                if (l1 > 0) {
+                    svg.innerHTML += `
+                        <rect x="${startX + bG * scale}" y="${centerY - (d * scale) / 2}" 
+                            width="${l1 * scale}" height="${d * scale}" 
+                            fill="white" stroke="black" stroke-width="0.4" />
+                    `;
+                }
+
+                // Внутренняя резьба
+                if (isSimple) {
+                    svg.innerHTML += `
+                        <polygon points="
+                            ${startX + (l - b) * scale},${centerY + (d * scale) / 2}
+                            ${startX + (l) * scale},${centerY + (d * scale) / 2} 
+                            ${startX + (l) * scale},${centerY - (d * scale) / 2} 
+                            ${startX + (l - b) * scale},${centerY - (d * scale) / 2}
+                            " 
+                            fill="white" stroke="black" stroke-width="0.4" />
+
+                        <line 
+                            x1="${startX + (l - b) * scale}" y1="${centerY - ((d-p) * scale) / 2}" 
+                            x2="${startX + (l) * scale}" y2="${centerY - ((d-p) * scale) / 2}" 
+                            stroke="black" stroke-width="0.1" />
+                        <line 
+                            x1="${startX + (l - b) * scale}" y1="${centerY + ((d-p) * scale) / 2}" 
+                            x2="${startX + (l) * scale}" y2="${centerY + ((d-p) * scale) / 2}" 
+                            stroke="black" stroke-width="0.1" />
+                    `;
+                } else {
+                    svg.innerHTML += `
+                        <polygon points="
+                            ${startX + (l - b) * scale},${centerY + (d * scale) / 2}
+                            ${startX + (l - p) * scale},${centerY + (d * scale) / 2} 
+                            ${startX + l * scale},${centerY + (d * scale) / 2.6}
+                            ${startX + l * scale},${centerY - (d * scale) / 2.6}
+                            ${startX + (l - p) * scale},${centerY - (d * scale) / 2} 
+                            ${startX + (l - b) * scale},${centerY - (d * scale) / 2}
+                            " 
+                            fill="white" stroke="black" stroke-width="0.4" />
+
+                        <line 
+                            x1="${startX + (l - b) * scale}" y1="${centerY - ((d-p) * scale) / 2}" 
+                            x2="${startX + (l - p/2) * scale}" y2="${centerY - ((d-p) * scale) / 2}" 
+                            stroke="black" stroke-width="0.1" />
+                        <line 
+                            x1="${startX + (l - b) * scale}" y1="${centerY + ((d-p) * scale) / 2}" 
+                            x2="${startX + (l - p/2) * scale}" y2="${centerY + ((d-p) * scale) / 2}" 
+                            stroke="black" stroke-width="0.1" />
+                        <line 
+                            x1="${startX + (l - p) * scale}" y1="${centerY + (d * scale) / 2}" 
+                            x2="${startX + (l - p) * scale}" y2="${centerY - (d * scale) / 2}" 
+                            stroke="black" stroke-width="0.4" />
+                    `;
+                }
+
+                // Задняя часть
+                if (isSimple) {
+                } else {
+                    svg.innerHTML += `
+                        <polygon points="
+                            ${startX + l * scale},${centerY - (d * scale) / 2.6}
+                            ${startX + l * scale},${centerY + (d * scale) / 2.6}
+                            ${startX + (l + p) * scale},${centerY + (d * scale) / 2.6}
+                            ${startX + (l + p) * scale},${centerY - (d * scale) / 2.6}
+                            " 
+                            fill="white" stroke="black" stroke-width="0.4" />
+                        <polygon points="
+                            ${startX + (l + p) * scale},${centerY - (d * scale) / 2.6}
+                            ${startX + (l + p) * scale},${centerY + (d * scale) / 2.6}
+                            ${startX + (l + p*4) * scale},${centerY + (d * scale) / 2.6}
+                            ${startX + (l + p*4) * scale},${centerY - (d * scale) / 2.6}
+                            " 
+                            fill="white" stroke="black" stroke-width="0.4" />
+                        <polygon points="
+                            ${startX + (l + p*4) * scale},${centerY - (d * scale) / 2.6}
+                            ${startX + (l + p*4) * scale},${centerY + (d * scale) / 2.6}
+                            ${startX + (l + p*5) * scale},${centerY}
+                            " 
+                            fill="white" stroke="black" stroke-width="0.4" />
+                    `;
+                }
+
+                // Шайба
+                if (isSimple) {
+                    svg.innerHTML += `
+                        <rect x="${ringOffsetX}" y="${centerY - (ringHeight * scale + 0.8 * scale) / 2}" 
+                            width="${ringWidth}" height="${ringHeight}" 
+                            fill="white" stroke="black" stroke-width="0.4" />
+                    `;
+                } else {
+                    svg.innerHTML += `
+                        <g transform="translate(${ringOffsetX}, ${ringOffsetY}) scale(${ringRatio})">
+                            <path d="M14 90H0V56.3564L14 46.6572V90ZM14 34.1865L0 43.8857V0H14V34.1865Z"
+                            fill="white" stroke="black" stroke-width="${0.4 / (ringRatio)}" />
+                        </g>
+                    `;
+                }
+               
+
+                // Гайка
+                if (isSimple) {
+                    svg.innerHTML += `
+                        <rect x="${startX + (bG * scale) - ringWidth - nutHeight}" y="${centerY - (nutWidth) / 2}"
+                            width="${nutHeight}" height="${nutWidth}" 
+                            fill="white" stroke="black" stroke-width="0.4" />
+                        <line 
+                            x1="${startX + (bG * scale) - ringWidth - nutHeight}" y1="${centerY - (nutWidth/4)}" 
+                            x2="${startX + (bG * scale) - ringWidth}" y2="${centerY - (nutWidth/4)}" 
+                            stroke="black" stroke-width="0.4" />
+                        <line 
+                            x1="${startX + (bG * scale) - ringWidth - nutHeight}" y1="${centerY + (nutWidth/4)}" 
+                            x2="${startX + (bG * scale) - ringWidth}" y2="${centerY + (nutWidth/4)}" 
+                            stroke="black" stroke-width="0.4" />
+                    `;
+                } else {
+                    svg.innerHTML += `
+                        <pattern id="diagonalLinesNut" width="1" height="1" patternTransform="rotate(45)" patternUnits="userSpaceOnUse">
+                        <line x1="0" y1="0" x2="0" y2="5" stroke="black" stroke-width="0.2" />
+                        </pattern>
+                        <polygon points="
+                            ${startX + (bG * scale) - (p/2 * scale) - ringWidth},${centerY + (nutWidth/2)}
+                            ${startX + (bG * scale) - ringWidth},${centerY + (nutWidth/2.5)}
+                            ${startX + (bG * scale) - ringWidth},${centerY - (nutWidth/2.5)}
+                            ${startX + (bG * scale) - (p/2 * scale) - ringWidth},${centerY - (nutWidth/2)}
+                    
+                            ${startX + (bG * scale) + (p/2 * scale) - ringWidth - nutHeight},${centerY - (nutWidth/2)}
+                            ${startX + (bG * scale) - ringWidth - nutHeight},${centerY - (nutWidth/2.5)}
+                            ${startX + (bG * scale) - ringWidth - nutHeight},${centerY + (nutWidth/2.5)}
+                            ${startX + (bG * scale) + (p/2 * scale) - ringWidth - nutHeight},${centerY + (nutWidth/2)}
+
+                            " 
+                            fill="white" stroke="black" stroke-width="0.4" />
+                        <polygon points="
+                            ${startX + (bG * scale) - (p/2 * scale) - ringWidth},${centerY + (nutWidth/2)}
+                            ${startX + (bG * scale) - ringWidth},${centerY + (nutWidth/2.5)}
+                            ${startX + (bG * scale) - ringWidth},${centerY + (d * scale)/2}
+                            ${startX + (bG * scale) - (p/2 * scale) - ringWidth},${centerY + (nutWidth)/4}
+            
+                            ${startX + (bG * scale) + (p/2 * scale) - ringWidth - nutHeight},${centerY + (nutWidth)/4}
+                            ${startX + (bG * scale) - ringWidth - nutHeight},${centerY + (d * scale)/2}
+                            ${startX + (bG * scale) - ringWidth - nutHeight},${centerY + (nutWidth/2.5)}
+                            ${startX + (bG * scale) + (p/2 * scale) - ringWidth - nutHeight},${centerY + (nutWidth/2)}
+                            " 
+                            fill="url(#diagonalLinesNut)" stroke="black" stroke-width="0.4"  />
+
+                        <line 
+                            x1="${startX + (bG * scale) + (nutWidth/2.1) - ringWidth - nutHeight}" y1="${centerY - (nutWidth/4)}" 
+                            x2="${startX + (bG * scale) - (nutWidth/2.1) - ringWidth}" y2="${centerY - (nutWidth/4)}" 
+                            stroke="black" stroke-width="0.4" />
+                            
+                        <line 
+                            x1="${startX + (bG * scale) + (nutWidth/2.1) - ringWidth - nutHeight}" y1="${centerY - (nutWidth/4)}" 
+                            x2="${startX + (bG * scale) - ringWidth}" y2="${centerY - (nutWidth/2.5)}" 
+                            stroke="black" stroke-width="0.4" />
+                        <line 
+                            x1="${startX + (bG * scale) - (nutWidth/2.1) - ringWidth}" y1="${centerY - (nutWidth/4)}" 
+                            x2="${startX + (bG * scale) - ringWidth - nutHeight}" y2="${centerY - (nutWidth/2.5)}" 
+                            stroke="black" stroke-width="0.4" />
+
+                        <line 
+                            x1="${startX + (bG * scale) + (nutWidth/2.1) - ringWidth - nutHeight}" y1="${centerY - (nutWidth/4)}" 
+                            x2="${startX + (bG * scale) - ringWidth}" y2="${centerY - (nutWidth/8)}" 
+                            stroke="black" stroke-width="0.4" />
+                        <line 
+                            x1="${startX + (bG * scale) - (nutWidth/2.1) - ringWidth}" y1="${centerY - (nutWidth/4)}" 
+                            x2="${startX + (bG * scale) - ringWidth - nutHeight}" y2="${centerY - (nutWidth/8)}" 
+                            stroke="black" stroke-width="0.4" />
+                            
+                        <line 
+                            x1="${startX + (bG*scale) + (p/2*scale) - ringWidth - nutHeight}" y1="${centerY + nutWidth/4}" 
+                            x2="${startX + (bG*scale) + (p/2*scale) - ringWidth - nutHeight}" y2="${centerY}" 
+                            stroke="black" stroke-width="0.4" />
+                        <line 
+                            x1="${startX + (bG*scale) - (p/2*scale) - ringWidth}" y1="${centerY + nutWidth/4}" 
+                            x2="${startX + (bG*scale) - (p/2*scale) - ringWidth}" y2="${centerY}" 
+                            stroke="black" stroke-width="0.4" />
+                    `;
+                }
+
+                // Риски длин
+                const sMarkStart = startX;
+                const sMarkEnd = startX + (l * scale);
+
+                const nMarkStart = startX;
+                const nMarkEnd = startX + (bG * scale);
+
+                const bMarkStart = startX + (l - b) * scale;
+                const bMarkEnd = startX + (l * scale);
+                svg.innerHTML += `
+                    <line x1="${sMarkStart}" y1="${centerY - 30}" x2="${sMarkStart}" y2="${centerY + 0}" stroke="black" stroke-width="0.1" />
+                    <line x1="${sMarkEnd}" y1="${centerY - 30}" x2="${sMarkEnd}" y2="${centerY + 0}" stroke="black" stroke-width="0.1" />
+                    <line x1="${sMarkStart}" y1="${centerY-30+2}" x2="${sMarkEnd}" y2="${centerY-30+2}" stroke="black" stroke-width="0.1" marker-start="url(#arrow-reverse)" marker-end="url(#arrow)" />
+                    <text x="${(sMarkStart + sMarkEnd) / 2}" y="${centerY - 30}" text-anchor="middle" dominant-baseline="middle" style="font-size: 0.2rem; font-family: monospace;">${l}мм</text>
+
+                    <line x1="${nMarkStart}" y1="${centerY - 24}" x2="${nMarkStart}" y2="${centerY + 0}" stroke="black" stroke-width="0.1" />
+                    <line x1="${nMarkEnd}" y1="${centerY - 24}" x2="${nMarkEnd}" y2="${centerY + 0}" stroke="black" stroke-width="0.1" />
+                    <line x1="${nMarkStart}" y1="${centerY-24+2}" x2="${nMarkEnd}" y2="${centerY-24+2}" stroke="black" stroke-width="0.1" marker-start="url(#arrow-reverse)" marker-end="url(#arrow)" />
+                    <text x="${(nMarkStart + nMarkEnd) / 2}" y="${centerY - 24}" text-anchor="middle" dominant-baseline="middle" style="font-size: 0.2rem; font-family: monospace;">${bG}мм</text>
+
+                    <line x1="${bMarkStart}" y1="${centerY - 24}" x2="${bMarkStart}" y2="${centerY + 0}" stroke="black" stroke-width="0.1" />
+                    <line x1="${bMarkEnd}" y1="${centerY - 24}" x2="${bMarkEnd}" y2="${centerY + 0}" stroke="black" stroke-width="0.1" />
+                    <line x1="${bMarkStart}" y1="${centerY-24+2}" x2="${bMarkEnd}" y2="${centerY-24+2}" stroke="black" stroke-width="0.1" marker-start="url(#arrow-reverse)" marker-end="url(#arrow)" />
+                    <text x="${(bMarkStart + bMarkEnd) / 2}" y="${centerY - 24}" text-anchor="middle" dominant-baseline="middle" style="font-size: 0.2rem; font-family: monospace;">${b}мм</text>
+
+                    <defs>
+                        <marker id="arrow-reverse" markerWidth="5" markerHeight="5" refX="0" refY="2.5" orient="auto" markerUnits="strokeWidth">
+                            <path d="M5,0 L0,2.5 L5,5 Z" fill="black" />
+                        </marker>
+                        <marker id="arrow" markerWidth="5" markerHeight="5" refX="5" refY="2.5" orient="auto" markerUnits="strokeWidth">
+                            <path d="M0,0 L5,2.5 L0,5 Z" fill="black" />
+                        </marker>
+                    </defs>
+                `;
+
+                // Элементы черчения
+                svg.innerHTML += `
+                <line x1="0" y1="${centerY}" x2="100%" y2="${centerY}" stroke="black" stroke-width="0.1" stroke-dasharray="13,1,1,1" />
+                <line x1="${startX + (l + 30) * scale}" y1="0%" x2="${startX + (l + 30) * scale}" y2="100%" stroke="black" stroke-width="0.1" stroke-dasharray="13,1,1,1" />
+                
+                <text x="2%" y="${centerY + 26}" style="font-size: 0.2rem; font-family: monospace;">Гайка ГОСТ 5915–70 18мм</text>
+                <text x="2%" y="${centerY + 30}" style="font-size: 0.2rem; font-family: monospace;">Шайба ГОСТ 6402-70 12.2мм 2.2мм</text>
+                <text x="2%" y="${centerY + 34}" style="font-size: 0.2rem; font-family: monospace;">Масштаб: x${scaleSlider.toFixed(1)}</text>
+
+                <line x1="${4}" y1="${centerY + 36}" x2="${4 + 10 * scale}" y2="${centerY + 36}" stroke="black" stroke-width="1.5" />
+                <text x="${5 + 10 * scale}" y="${centerY + 36.25}" dominant-baseline="middle" style="font-size: 0.15rem; font-family: monospace;">1см</text>
+                `;
+
+                const materialWidth = nutWidth + 1*scale;
+
+                svg.innerHTML = `
+                    <pattern id="diagonalLines" width="${1.5 * scale}" height="${1.5 * scale}" patternTransform="rotate(45)" patternUnits="userSpaceOnUse">
+                    <line x1="0" y1="0" x2="0" y2="10" stroke="#b5b5b5" stroke-width="0.6" />
+                    </pattern>
+                    <pattern id="diagonalLinesRotate" width="${1.5 * scale}" height="${1.5 * scale}" patternTransform="rotate(-45)" patternUnits="userSpaceOnUse">
+                    <line x1="0" y1="0" x2="0" y2="10" stroke="#b5b5b5" stroke-width="0.6" />
+                    </pattern>
+
+                    <polygon points="
+                        ${startX + (bG * scale)},${centerY + materialWidth}
+                        ${startX + (bG * scale)},${centerY + (d + p) * scale / 2}
+                        ${startX + (bG * scale) + (l1 * 1.2 * scale)},${centerY + (d + p) * scale / 2}
+                        ${startX + (bG * scale) + (l1 * 1.2 * scale)},${centerY + materialWidth}
+                        " 
+                        stroke="#b5b5b5" stroke-width="0.4" fill="url(#diagonalLinesRotate)" />
+
+                    <polygon points="
+                        ${startX + (bG * scale)},${centerY - materialWidth}
+                        ${startX + (bG * scale)},${centerY - (d + p) * scale / 2}
+                        ${startX + (bG * scale) + (l1 * 1.2 * scale)},${centerY - (d + p) * scale / 2}
+                        ${startX + (bG * scale) + (l1 * 1.2 * scale)},${centerY - materialWidth}
+                        " 
+                        stroke="#b5b5b5" stroke-width="0.4" fill="url(#diagonalLinesRotate)" />
+                    
+                    <polygon points="
+                        ${startX + (bG * scale) + (l1 * 1.2 * scale)},${centerY + materialWidth}
+                        ${startX + (bG * scale) + (l1 * 1.2 * scale)},${centerY - materialWidth}
+                        ${startX + (0.4 * scale) + (l * scale) + (p*4) * scale + (3 * scale)},${centerY - materialWidth}
+                        ${startX + (0.4 * scale) + (l * scale) + (p*4) * scale + (3 * scale)},${centerY + materialWidth}
+                        " 
+                        stroke="#b5b5b5" stroke-width="0.4" fill="url(#diagonalLines)" />
+                ` + svg.innerHTML;
+
+                break;
+            }
+            default: {
+                break;
+            }
+        }
+    }
+
+    draw();
+    updateNailOptions();
+    </script>
+</body>
+</html>
